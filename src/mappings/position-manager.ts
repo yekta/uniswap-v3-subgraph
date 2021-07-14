@@ -16,14 +16,17 @@ function getPosition(event: ethereum.Event, tokenId: BigInt): Position | null {
   if (position === null) {
     let contract = NonfungiblePositionManager.bind(event.address)
     let positionCall = contract.try_positions(tokenId)
+    let tokenURICall = contract.try_tokenURI(tokenId)
 
     // the following call reverts in situations where the position is minted
     // and deleted in the same block - from my investigation this happens
     // in calls from  BancorSwap
     // (e.g. 0xf7867fa19aa65298fadb8d4f72d0daed5e836f3ba01f0b9b9631cdc6c36bed40)
-    if (!positionCall.reverted) {
+    if (!positionCall.reverted && !tokenURICall.reverted) {
       let positionResult = positionCall.value
       let poolAddress = factoryContract.getPool(positionResult.value2, positionResult.value3, positionResult.value4)
+
+      let tokenURIResult = tokenURICall.value.split(',')
 
       position = new Position(tokenId.toString())
       // The owner gets correctly updated in the Transfer handler
@@ -43,6 +46,8 @@ function getPosition(event: ethereum.Event, tokenId: BigInt): Position | null {
       position.transaction = loadTransaction(event).id
       position.feeGrowthInside0LastX128 = positionResult.value8
       position.feeGrowthInside1LastX128 = positionResult.value9
+      position.tokenURIType = tokenURIResult[0]
+      position.tokenURI = tokenURIResult[1]
     }
   }
 
@@ -76,6 +81,8 @@ function savePositionSnapshot(position: Position, event: ethereum.Event): void {
   positionSnapshot.transaction = loadTransaction(event).id
   positionSnapshot.feeGrowthInside0LastX128 = position.feeGrowthInside0LastX128
   positionSnapshot.feeGrowthInside1LastX128 = position.feeGrowthInside1LastX128
+  positionSnapshot.tokenURIType = position.tokenURIType
+  positionSnapshot.tokenURI = position.tokenURI
   positionSnapshot.save()
 }
 

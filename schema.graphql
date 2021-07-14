@@ -224,6 +224,10 @@ type Position @entity {
   # vars needed for fee computation
   feeGrowthInside0LastX128: BigInt!
   feeGrowthInside1LastX128: BigInt!
+
+  # token URI of the NFT (see ERC721Metadata interface)
+  tokenURIType: String!
+  tokenURI: String!
 }
 
 type PositionSnapshot @entity {
@@ -258,6 +262,9 @@ type PositionSnapshot @entity {
   # internal vars needed for fee computation
   feeGrowthInside0LastX128: BigInt!
   feeGrowthInside1LastX128: BigInt!
+  # token URI of the NFT (see ERC721Metadata interface)
+  tokenURIType: String!
+  tokenURI: String!
 }
 
 type Transaction @entity {
